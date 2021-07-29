@@ -2,7 +2,8 @@
 <div id="app">
   <Logo />
   <div class="logout">
-    <p @click="$store.dispatch('logout')">ログアウト</p>
+    <p @click="$router.push('/mypage')">マイページ</p>
+    <p class="logoutMargin" @click="$store.dispatch('logout')">ログアウト</p>
   </div>
   <div class="info">
     <div class="infoHead">
@@ -22,18 +23,34 @@
       <option v-for="(n, nIndex) in 10" v-bind:key="nIndex" v-bind:value="n">{{ n }}人</option>
     </select>
     <p class="explanation">空き状況を確認したい日程の開始日を選択してください。</p>
-    <select name="startDateCount" v-model="startDateCount">
-      <option v-for="(monthAheadDate, dateIndex) in monthAhead" v-bind:key="dateIndex" v-bind:value="monthAheadDate[3]">{{monthAheadDate[0]}}月{{monthAheadDate[1]}}日（{{monthAheadDate[2]}}）</option>
+    <!-- ここで選択した場合はstartDateが選択した日付になり、選択しない場合はstartDateは今日になる -->
+    <select name="startDate" v-model="startDate">
+      <!-- 配列の要素が「○月✕日」のように表示されればそこから、その日の月と日で表示できるが現状では無理やり配列に新たな要素を作ってmonthAheadDate[3]としてはめ込んでいる-->
+      <option v-for="(dateOneMonthAhead, dateIndex) in datesOneMonthAhead" v-bind:key="dateIndex" v-bind:value="dateOneMonthAhead[0]">{{dateOneMonthAhead[1]}}年{{dateOneMonthAhead[2]}}月{{dateOneMonthAhead[3]}}日（{{dateOneMonthAhead[4]}}）</option>
     </select>
+    <!-- numberを入力すると下記が表示される -->
       <table v-show="number">
         <tr>
           <th></th>
-          <th v-for="(chosenWeekDate, chosenWeekindex) in chosenWeek" v-bind:key="`chosenWeekindex-${chosenWeekindex}`" v-show="startDateCount">{{chosenWeekDate[1]}}月{{chosenWeekDate[2]}}日（{{chosenWeekDate[3]}}）</th>
-          <th v-for="(thisWeekDate, thisWeekindex) in thisWeek" v-bind:key="`thisWeekindex-${thisWeekindex}`" v-show="!startDateCount">{{thisWeekDate[0]}}月{{thisWeekDate[1]}}日（{{thisWeekDate[2]}}）</th>
+          <!-- startDateが入っていれば選んだ日付から一週間が、入っていなければ今日から一週間が表示される -->
+          <th v-for="(date, index) in dates" v-bind:key="index" v-show="number">{{date[2]}}/{{date[3]}}（{{date[4]}}）</th>
         </tr>
-        <tr v-for="(time, trindex) in timeList" v-bind:key="`trindex-${trindex}`">
+        <!-- 時間の配列と空き状況ははバックエンドから持ってくる -->
+        <tr v-for="(time, timeIndex) in times" v-bind:key="`timeIndex-${timeIndex}`">
           <td>{{time}}</td>
-          <td v-for="(availability, index) in dateList" v-bind:key="`index-${index}`" @click="setDateTime([trindex],[index])">{{availability[trindex]}}</td>
+          <td v-for="(availability, index) in availabilityArray" v-bind:key="`index-${index}`" id="hover">
+            <input type="radio"
+                    v-if="availability[timeIndex+1][time]===true" 
+                    name="check" :id="[timeIndex+1]+[index]" 
+                    :value="time" 
+                    @click="setDateTime(availability[0][0],availability[0][1],availability[0][2],availability[0][3],availability[0][4],time)">
+              <label :for="[timeIndex+1]+[index]" v-if="availability[timeIndex+1][time]===true">
+                ◯
+              </label>
+            <p v-if="availability[timeIndex+1][time]===false">
+              ✕
+            </p>
+            </td>
         </tr>
        
       </table>
@@ -46,7 +63,8 @@
         </tr>
         <tr>
           <th>Date</th>
-          <td v-show="date">{{date[1]}}月{{date[2]}}日（{{date[3]}}）</td>
+          <!-- ここも本来はgetMonth的な関数で持って来れるようにするべき -->
+          <td v-show="date">{{chosenYear}}年{{chosenMonth}}月{{chosenDate}}日（{{chosenDay}}）</td>
         </tr>
         <tr>
           <th>Time</th>
@@ -58,6 +76,7 @@
         </tr>
       </table>
     </div>
+    <!-- 時間の指定まで終わった場合は予約の確定ボダンが表示される -->
   <button @click="confirmDateTime" v-show="time">予約する</button>
   </div>
 
@@ -74,393 +93,112 @@ export default {
  props: ["id"],
  data() {
    return {
+     user_id: this.$store.state.user.id,
      shopInfo: "",
+     availabilityArray: [],
+     availabilityArra: [],
+     datesOneMonthAhead: [],
+     dataFromBack: [],
+     dates: [],
+     times: [],
+     chosenYear: "",
+     chosenMonth: "",
+     chosenDate: "",
+     chosenDay: "",
      date: "",
      time: "",
      number: "",
-     row: "",
-     colmun: "",
-     trindex: "",
-     startDateCount: "",
-     shop_id: 1,
-     startDate: "",
-     thisWeek: [],
-     chosenWeek: [],
-     monthAhead: [],
-     joinWord: "",
-     availablity: [],
-     allReservationData: [],
-     timeList: [
-       "10:00",
-       "10:30",
-       "11:00",
-       "11:30",
-       "12:00",
-       "12:30",
-       "13:00",
-       "13:30",
-       "14:00",
-       "14:30",
-       "15:00",
-       "15:30",
-       "16:00",
-       "16:30",
-       "17:00",
-       "17:30",
-       "18:00",
-       "18:30",
-       "19:00",
-       "19:30",
-       "20:00",
-       "20:30",
-       "21:00",
-       "21:30",
-       "22:00",
-       "22:30",
-     ],
-     dateList: [
-       [
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-       ],
-       [
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-       ],
-       [
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-       ],
-       [
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-       ],
-       [
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-       ],
-       [
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-       ],
-       [
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-         "◯",
-       ],
-     ],
+     startDate: new Date(),
    }
  },
  async created() {
-   for(let i = 0; i < 7; i++) {
-     if (i === 0) {
-       var today = new Date();
-      //  console.log("today",today);
-       this.thisWeek = new Array();
-     }
-     var dateAndDay = [];
-
-     var dateList = ["日","月","火","水","木","金","土"];
-     var day = dateList[today.getDay()];
-
-     dateAndDay.push(today.getMonth()+1);
-     dateAndDay.push(today.getDate());
-     dateAndDay.push(day);
-    //  console.log(dateAndDay)
-
-     today.setDate(today.getDate() + 1);
-    //  console.log("today",today)
-
-     this.thisWeek.push(dateAndDay);
-     dateAndDay = [];
-    //  console.log(this.thisWeek)
-   }
-   for(let i = 0; i < 30; i++) {
-     if (i === 0) {
-       var todaymonthAhead = new Date();
-       this.monthAhead = new Array();
-     }
-     var dateAndDaymonthAhead = [];
-
-     var dateListmonthAhead = ["日","月","火","水","木","金","土"];
-    //  console.log("todaymonthAhead.getDay()",todaymonthAhead.getDay());
-     var daymonthAhead = dateListmonthAhead[todaymonthAhead.getDay()];
-
-     dateAndDaymonthAhead.push(todaymonthAhead.getMonth()+1);
-     dateAndDaymonthAhead.push(todaymonthAhead.getDate());
-     dateAndDaymonthAhead.push(daymonthAhead);
-     dateAndDaymonthAhead.push(i);
-    //  console.log(dateAndDay)
-
-     todaymonthAhead.setDate(todaymonthAhead.getDate() + 1);
-    //  console.log("todaymonthAhead",todaymonthAhead);
-
-     this.monthAhead.push(dateAndDaymonthAhead);
-     dateAndDaymonthAhead = [];
-    //  console.log(this.monthAhead)
-   }
    this.getShopInfo();
  },
  methods: {
-   setDateTime(row, column) {
-     var date = ""
-     if (this.startDateCount) {
-       date = this.chosenWeek[column];
-     } else {
-       date = this.thisWeek[column];
-     }
-    //  console.log("date", date);
-     var time = this.timeList[row];
-    //  console.log("time", time);
+   setDateTime(date, chosenYear, chosenMonth, chosenDate, chosenDay, time) {
      this.date = date;
+     this.chosenYear = chosenYear;
+     this.chosenMonth = chosenMonth;
+     this.chosenDate = chosenDate;
+     this.chosenDay = chosenDay;
      this.time = time;
-     this.row = row[0];
-    //  console.log("row", row[0]);
-     this.column = column[0];
-    //  console.log("column", column[0]);
    },
+  //  ここで予約を確定するために日時、人数、ショップID、ユーザーIDをバックに送る
    confirmDateTime() {
-    this.dateList[this.column][this.row] = "✕";
-    this.row = "";
-    this.colmun = "";
-    this.$router.push('/about')
+    axios
+      .get("http://127.0.0.1:8001/api/confirmDateTime", {
+        params: {
+          shop_id: this.id,
+          user_id: this.user_id,
+          date: this.date,
+          time: this.time,
+          number: this.number,
+        }
+      })
+      .then(() => {
+        this.$router.push('/thanks')
+      })
    },
    async getShopInfo() {
      const data = await axios.get(
        "http://127.0.0.1:8001/api/getShopInfo/?id=" + this.id
      )
-     this.shopInfo = data.data
+     this.shopInfo = data.data;
+   },
+   async getSlot() {
+     const data = await axios.get(
+       "http://127.0.0.1:8001/api/getSlot/",{
+         params: {
+           shop_id: this.id,
+           user_id: this.user_id,
+           startDate: this.startDate,
+           number: this.number,
+           open: this.shopInfo.open,
+           close: this.shopInfo.close,
+           period: this.shopInfo.period,
+           time: "20:00",
+           date: "2021-08-02",
+          //  time: this.time,
+          //  date: this.date,
+         }
+       })
+     this.dataFromBack = data.data;
+     this.datesOneMonthAhead = this.dataFromBack.datesOneMonthAhead;
+     this.dates = this.dataFromBack.dates;
+     this.times = this.dataFromBack.times;
+     this.availabilityArray = this.dataFromBack.day_available_array;
+    //  人数や日程を変更した後もその前に選択した日時が残るのでリセットする
+     this.date = "";
+     this.chosenYear = "";
+     this.chosenMonth = "";
+     this.chosenDate = "";
+     this.chosenDay = "";
+     this.time = "";
    }
-},
+
+// text = text.replace(/aaa/g, 'ccc');
+
+
+ },
  watch: {
-   startDateCount: function() {
-     axios.post("http://127.0.0.1:8001/api/reservations/", {
-       number: this.number,
-       shop_id: 1,
-       startDate: this.startDate,
-     })
-     .then(res =>  {
-       this.availablity = res.data.availablity;
-       }).catch( error => { console.log(error); });
+   
+  //  ＊＊＊＊＊＊＊＊＊＊
+  number: function(){
+    this.getSlot();
+  },
 
-    for(let i = 0; i < 7; i++) {
-      if (i === 0) {
-        var todayStart = new Date();
-        // console.log("this.startDateCount",this.startDateCount);
+  startDate: function(){
+    this.getSlot();
+  },
 
-        todayStart.setDate(todayStart.getDate() + this.startDateCount);
-        this.startDate = todayStart;
-        // console.log("this.startDate",this.startDate);
-        // console.log("this.start_date",this.start_date);
-        // console.log("todayStart",todayStart);
-        this.chosenDate = todayStart;
+  // date: function(){
+  //   this.getSlot();
+  // },
 
-        this.chosenWeek = new Array();
-      }
-      var dateAndDayStart = [];
+  // time: function(){
+  //   this.getSlot();
+  // }
 
-      var dateListStart = ["日","月","火","水","木","金","土"];
-      // console.log("todayStart.getDay()",todayStart.getDay());
-      var dayStart = dateListStart[todayStart.getDay()];
-
-      dateAndDayStart.push(todayStart.getFullYear());
-      dateAndDayStart.push(todayStart.getMonth()+1);
-      dateAndDayStart.push(todayStart.getDate());
-      this.joinWord = dateAndDayStart.join("-");
-      dateAndDayStart.push(dayStart);
-      dateAndDayStart.push(this.joinWord);
-      dateAndDayStart.push(todayStart);
-      // console.log("dateAndDayStart",dateAndDayStart);
-
-      todayStart.setDate(todayStart.getDate() + 1);
-      //  console.log("this.start_date",this.start_date);
-
-      this.chosenWeek.push(dateAndDayStart);
-      dateAndDayStart = [];
-      console.log("chosenWeek",this.chosenWeek)
-   }
-   }
  }
 };
 </script>
@@ -580,5 +318,31 @@ th {
 .infoContent {
   text-align: left;
   width: 120%;
+}
+
+.logoutMargin {
+  margin-left: 15px;
+}
+
+tr {
+  height: 30px;
+}
+
+input[type=radio] {
+  display: none; /* ラジオボタンを非表示にする */
+}
+
+input[type="radio"]:checked + label {
+  background: #ff3064;/* マウス選択時の背景色を指定する */
+  color: #ffffff; /* マウス選択時のフォント色を指定する */
+  border-radius: 5px;
+  display: block;
+}
+
+#hover:hover {
+  background-color: #ffffff; /* マウスオーバー時の背景色を指定する */
+  color: #ff3064;
+  border-radius: 5px;
+  font-weight: 900;
 }
 </style>

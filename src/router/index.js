@@ -4,6 +4,8 @@ import Login from '../views/Login.vue'
 import Home from '../views/Home.vue'
 import Register from '../views/Register.vue'
 import Shop from '../views/Shop.vue'
+import Mypage from '../views/Mypage.vue'
+import Thanks from '../views/Thanks.vue'
 import store from "../store/index";
 
 Vue.use(VueRouter)
@@ -35,6 +37,22 @@ const routes = [
       requiresAuth: true,
     },
     props: true,
+  },
+  {
+    path: "/mypage",
+    name: "Mypage",
+    component: Mypage,
+    meta: {
+      requiresAuth: true,
+    },
+  },
+  {
+    path: "/thanks",
+    name: "Thanks",
+    component: Thanks,
+    meta: {
+      requiresAuth: true,
+    },
   },
 ]
 
