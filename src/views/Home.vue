@@ -7,7 +7,7 @@
   </div>
   <div class="card" id="searchBar">
     <select v-model="selectedArea" class="selected">
-      <option hidden>All area</option>
+      <option>All area</option>
       <option v-for="area in optionAreas" 
         v-bind:value="area" 
         v-bind:key="area">
@@ -16,7 +16,7 @@
     </select>
     <div class="separateOne">|</div>
     <select v-model="selectedGenre" class="selected" >
-      <option hidden>All genre</option>
+      <option>All genre</option>
       <option v-for="genre in optionGenres" 
         v-bind:value="genre" 
         v-bind:key="genre">
@@ -27,19 +27,20 @@
     <input type="text" placeholder="Search ..." v-model="searchWords">
     <img src="../assets/search.png" alt="" id="search">
   </div>
-  <div class="cardfloat" v-for="(value, index) in shops" :key="`first-${index}`" v-show="allShops">
+  <div class="cardfloat" v-for="(value, index) in shopDetail" :key="`first-${index}`" v-show="allShops">
     <div class="card" >
-      <img :src="value.img_url" alt="">
-      <p id="shop_name">{{ value.name }}</p>
-      <p id="region_genre">#{{ value.region }}#{{ value.genre }}</p>
+      <img :src="value.shop.img_url" alt="">
+      <p id="shop_name">{{ value.shop.name }}</p>
+      <p id="region_genre">#{{ value.shop.region }}#{{ value.shop.genre }}</p>
       <div class="button_img_flex">
         <button @click="
                   $router.push({
-                    path: '/shop/' + value.id,
-                    params: { id: value.id },
+                    path: '/shop/' + value.shop.id,
+                    params: { id: value.shop.id },
                   })
                 ">詳しく見る</button>
-        <img class="heart_img" src="../assets/heart.png" alt="">
+        <img class="heart_img" src="../assets/Rheart.png" @click="fav(value.shop.id)" alt="" v-if="value.favorite.length === 1">
+        <img class="heart_img" src="../assets/heart.png" @click="fav(value.shop.id)" alt="" v-if="value.favorite.length === 0">
       </div>
     </div>
   </div>
@@ -83,6 +84,7 @@ export default {
       allShops: true,
       selectedShops: false,
       wordChangeCounter: 0,
+      shopDetail: [],
     };
   },
   methods: {
@@ -90,7 +92,7 @@ export default {
       const data = await axios.get(
         "http://127.0.0.1:8001/api/getshops"
       );
-      this.shops = data.data.data
+      this.shops = data.data.data;
 
       // エリアの選択肢をshopsから抽出
       for(let i = 0; this.shops.length > i; i++) {
@@ -106,6 +108,100 @@ export default {
           // console.log('this.optionGenres',this.optionGenres)
         }
       }
+
+      let shopDetail = [];
+      for (let k = 0; data.data.data.length > k; k++) {
+        // console.log("test",data.data.data[k].id);
+        // console.log("test",data.data.data[k].id);
+        // console.log("test",data.data.data[k].id);
+        await axios
+          .get(
+            "http://127.0.0.1:8001/api/getShopInfo/?id=" +
+              data.data.data[k].id
+          )
+          .then((response) => {
+            shopDetail.push(response.data);
+          });
+      }
+      this.shopDetail = shopDetail;
+
+      console.log("this.shopDetail",this.shopDetail);
+      },
+
+    // async getShares() {
+    //   let data = [];
+    //   const shares = await axios.get(
+    //     "http://127.0.0.1:8000/api/shares"
+    //   );
+    //   for (let i = 0; i < shares.data.data.length; i++) {
+    //     await axios
+    //       .get(
+    //         "http://127.0.0.1:8000/api/shares/" +
+    //           shares.data.data[i].id
+    //       )
+    //       .then((response) => {
+    //         if (this.$route.name == "profile") {
+    //           if (response.data.item.user_id == this.$store.state.user.id) {
+    //             data.push(response.data);
+    //           }
+    //         } else if (this.$route.name == "detail") {
+    //           if (response.data.item.id == this.id) {
+    //             data.push(response.data);
+    //           }
+    //         } else {
+    //           data.push(response.data);
+    //         }
+    //       });
+    //   }
+    //   this.shares = data;
+
+    //   console.log("this.shares",this.shares);
+    // },
+
+
+
+    // },
+    async fav(index) {
+      const data = await axios
+          .get("http://127.0.0.1:8001/api/favorite", {
+            params: {
+              shop_id: index,
+              user_id: this.$store.state.user.id,
+            }
+          })
+          const result = data.data.data;
+          console.log("result",data.data.data);
+      if (result) {
+        axios({
+          method: "delete",
+          url: "http://127.0.0.1:8001/api/favorite",
+          data: {
+            shop_id: index,
+            user_id: this.$store.state.user.id,
+          },
+        }).then((response) => {
+          console.log(response);
+          this.$router.go({
+            path: this.$router.currentRoute.path,
+            force: true,
+          });
+        });
+        console.log("test1");
+      } else {
+        console.log("test2");
+        axios
+          .post("http://127.0.0.1:8001/api/favorite", {
+            shop_id: index,
+            user_id: this.$store.state.user.id,
+          })
+          .then((response) => {
+            console.log(response);
+            this.$router.go({
+              path: this.$router.currentRoute.path,
+              force: true,
+            });
+          });
+      }
     }
   },
   created() {
@@ -114,32 +210,48 @@ export default {
   watch: {
     // selectedAreaが入力されたらshopsの表示をv-showで消し、代わりにshopsSelectedを表示する
     selectedArea: function() {
-      // ジャンルが設定されていない場合はエリアのみの表示にする
-      if(this.selectedGenre === "All genre"){
+      // エリアとジャンルどちらも指定がない場合は全てのshop一覧を表示
+      if(this.selectedGenre === "All genre" && this.selectedArea === "All area"){
+        this.allShops = true;
+      // エリアの指定がない場合はジャンルのみでフィルターする
+      } else if(this.selectedArea === "All area"){
         this.allShops = false;
         this.selectedShops = true;
-        this.shopsSelected = this.shops.filter((value) => value.region === this.selectedArea)
+        this.shopsSelected = this.shops.filter((value) => value.genre === this.selectedGenre);
+      // ジャンルの指定がない場合はエリアのみでフィルターする
+      } else if(this.selectedGenre === "All genre"){
+        this.allShops = false;
+        this.selectedShops = true;
+        this.shopsSelected = this.shops.filter((value) => value.region === this.selectedArea);
       // エリアとジャンルの両方が表示されている場合はshopを両方の条件でフィルターする
       } else {
         this.allShops = false;
         this.selectedShops = true;
-        var areaChecked = this.shops.filter((value) => value.region === this.selectedArea)
-        this.shopsSelected = areaChecked.filter((value) => value.genre === this.selectedGenre)
+        var areaChecked = this.shops.filter((value) => value.region === this.selectedArea);
+        this.shopsSelected = areaChecked.filter((value) => value.genre === this.selectedGenre);
       }
     },
     // selectedGenreが入力されたらshopsの表示をv-showで消し、代わりにshopsSelectedを表示する
     selectedGenre: function() {
-      // ジャンルが設定されていない場合はエリアのみの表示にする
-      if(this.selectedArea === "All area"){
+      // エリアとジャンルどちらも指定がない場合は全てのショップ一覧を表示
+      if(this.selectedGenre === "All genre" && this.selectedArea === "All area"){
+        this.allShops = true;
+      // ジャンルの指定がない場合はエリアのみでフィルターする
+      } else if(this.selectedGenre === "All genre"){
         this.allShops = false;
         this.selectedShops = true;
-        this.shopsSelected = this.shops.filter((value) => value.genre === this.selectedGenre)
+        this.shopsSelected = this.shops.filter((value) => value.region === this.selectedArea);
+      // エリアの指定がない場合はジャンルのみでフィルターする
+      } else if(this.selectedArea === "All area"){
+        this.allShops = false;
+        this.selectedShops = true;
+        this.shopsSelected = this.shops.filter((value) => value.genre === this.selectedGenre);
       // エリアとジャンルの両方が表示されている場合はshopを両方の条件でフィルターする
       } else {
         this.allShops = false;
         this.selectedShops = true;
-        var genreChecked = this.shops.filter((value) => value.genre === this.selectedGenre)
-        this.shopsSelected = genreChecked.filter((value) => value.region === this.selectedArea)
+        var genreChecked = this.shops.filter((value) => value.genre === this.selectedGenre);
+        this.shopsSelected = genreChecked.filter((value) => value.region === this.selectedArea);
       }
     },
     // searchWordsが入力されたらshopsの表示をv-showで消し、代わりにshopsSelectedを表示する

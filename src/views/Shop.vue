@@ -2,18 +2,18 @@
 <div id="app">
   <Logo />
   <div class="logout">
-    <p @click="$router.push('/mypage')">マイページ</p>
+    <p @click="$router.push('/mypage')">マイページ{{time}}{{date}}</p>
     <p class="logoutMargin" @click="$store.dispatch('logout')">ログアウト</p>
   </div>
   <div class="info">
     <div class="infoHead">
       <button @click="$router.push('/home')">&lt;</button>
-      <h1>{{shopInfo.name}}</h1>
+      <h1>{{shopInfo.shop.name}}</h1>
     </div>
-    <img :src="shopInfo.img_url" alt="">
+    <img :src="shopInfo.shop.img_url" alt="">
     <div class="infoContent">
-      <p>#{{shopInfo.region}}#{{shopInfo.genre}}</p>
-      <p>{{shopInfo.info}}</p>
+      <p>#{{shopInfo.shop.region}}#{{shopInfo.shop.genre}}</p>
+      <p>{{shopInfo.shop.info}}</p>
     </div>
   </div>
   <div class="reservation">
@@ -59,7 +59,7 @@
       <table>
         <tr>
           <th>Shop</th>
-          <td>{{shopInfo.name}}</td>
+          <td>{{shopInfo.shop.name}}</td>
         </tr>
         <tr>
           <th>Date</th>
@@ -144,6 +144,8 @@ export default {
        "http://127.0.0.1:8001/api/getShopInfo/?id=" + this.id
      )
      this.shopInfo = data.data;
+     console.log("this.shopInfo",this.shopInfo);
+     
    },
    async getSlot() {
      const data = await axios.get(
@@ -153,13 +155,9 @@ export default {
            user_id: this.user_id,
            startDate: this.startDate,
            number: this.number,
-           open: this.shopInfo.open,
-           close: this.shopInfo.close,
-           period: this.shopInfo.period,
-           time: "20:00",
-           date: "2021-08-02",
-          //  time: this.time,
-          //  date: this.date,
+           open: this.shopInfo.shop.open,
+           close: this.shopInfo.shop.close,
+           period: this.shopInfo.shop.period,
          }
        })
      this.dataFromBack = data.data;
