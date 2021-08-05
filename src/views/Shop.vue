@@ -2,7 +2,7 @@
 <div id="app">
   <Logo />
   <div class="logout">
-    <p @click="$router.push('/mypage')">マイページ{{time}}{{date}}</p>
+    <p @click="$router.push('/mypage')">マイページ</p>
     <p class="logoutMargin" @click="$store.dispatch('logout')">ログアウト</p>
   </div>
   <div class="info">
