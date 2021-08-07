@@ -215,9 +215,9 @@ button {
 
 .cardfloat .card {
   float: left;
-  width: calc(30%);
+  width: 210px;
   margin: 0 15px 15px 0;
-  height: 250px;
+  height: 267px;
 }
 
 .card {
