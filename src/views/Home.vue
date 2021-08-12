@@ -2,62 +2,154 @@
 <div id="app">
   <Logo />
   <div class="logout">
-    <p @click="$router.push('/mypage')">マイページ</p>
+    <p @click="$router.push('/mypage')" v-if="this.$store.state.user.type === 1">マイページ</p>
+    <p @click="$router.push('/tableRegister')" v-if="this.$store.state.user.type === 2">座席登録</p>
+    <p @click="$router.push('/shopRegister')" v-if="this.$store.state.user.type === 3">店舗登録</p>
     <p class="logoutMargin" @click="$store.dispatch('logout')">ログアウト</p>
   </div>
-  <div class="card" id="searchBar">
-    <select v-model="selectedArea" class="selected">
-      <option>All area</option>
-      <option v-for="area in optionAreas" 
-        v-bind:value="area" 
-        v-bind:key="area">
-      {{ area }}
-      </option>
-    </select>
-    <div class="separateOne">|</div>
-    <select v-model="selectedGenre" class="selected" >
-      <option>All genre</option>
-      <option v-for="genre in optionGenres" 
-        v-bind:value="genre" 
-        v-bind:key="genre">
-      {{ genre }}
-      </option>
-    </select>
-    <div class="separateTwo">|</div>
-    <input type="text" placeholder="Search ..." v-model="searchWords">
-    <img src="../assets/search.png" alt="" id="search">
-  </div>
-  <div class="cardfloat" v-for="(value, index) in shopDetail" :key="`first-${index}`" v-show="allShops">
-    <div class="card" >
-      <img :src="value.shop.img_url" alt="">
-      <p id="shop_name">{{ value.shop.name }}</p>
-      <p id="region_genre">#{{ value.shop.region }}#{{ value.shop.genre }}</p>
-      <div class="button_img_flex">
-        <button @click="
-                  $router.push({
-                    path: '/shop/' + value.shop.id,
-                    params: { id: value.shop.id },
-                  })
-                ">詳しく見る</button>
-        <img class="heart_img" src="../assets/Rheart.png" @click="fav(value.shop.id)" alt="" v-if="value.favorite.length === 1">
-        <img class="heart_img" src="../assets/heart.png" @click="fav(value.shop.id)" alt="" v-if="value.favorite.length === 0">
+  <div v-if="this.$store.state.user.type === 1">
+    <div class="card" id="searchBar">
+      <select v-model="selectedArea" class="selected">
+        <option>All area</option>
+        <option v-for="area in optionAreas" 
+          v-bind:value="area" 
+          v-bind:key="area">
+        {{ area }}
+        </option>
+      </select>
+      <div class="separateOne">|</div>
+      <select v-model="selectedGenre" class="selected" >
+        <option>All genre</option>
+        <option v-for="genre in optionGenres" 
+          v-bind:value="genre" 
+          v-bind:key="genre">
+        {{ genre }}
+        </option>
+      </select>
+      <div class="separateTwo">|</div>
+      <input type="text" placeholder="Search ..." v-model="searchWords">
+      <img src="../assets/search.png" alt="" id="search">
+    </div>
+    <div class="cardfloat" v-for="(value, index) in shops" :key="`first-${index}`" v-show="allShops">
+      <div class="card">
+        <img :src="value.shop.img_url" alt="">
+        <p id="shop_name">{{ value.shop.name }}</p>
+        <p id="region_genre">#{{ value.shop.region }}#{{ value.shop.genre }}</p>
+        <div class="button_img_flex">
+          <button @click="
+                    $router.push({
+                      path: '/shop/' + value.shop.id,
+                      params: { id: value.shop.id },
+                    })
+                  ">詳しくみる</button>
+          <img class="heart_img" src="../assets/Rheart.png" @click="fav(value.shop.id)" alt="" v-if="value.favorite !== null">
+          <img class="heart_img" src="../assets/heart.png" @click="fav(value.shop.id)" alt="" v-if="value.favorite === null">
+        </div>
+      </div>
+    </div>
+    <div class="cardfloat" v-for="(value, index) in shopsSelected" :key="`second-${index}`" v-show="selectedShops">
+      <div class="card" >
+        <img :src="value.shop.img_url" alt="">
+        <p id="shop_name">{{ value.shop.name }}</p>
+        <p id="region_genre">#{{ value.shop.region }}#{{ value.shop.genre }}</p>
+        <div class="button_img_flex">
+          <button @click="
+                    $router.push({
+                      path: '/shop/' + value.shop.id,
+                      params: { id: value.shop.id },
+                    })
+                  ">詳しくみる</button>
+          <img class="heart_img" src="../assets/Rheart.png" alt="" v-if="value.favorite !== null">
+          <img class="heart_img" src="../assets/heart.png" alt="" v-if="value.favorite === null">
+        </div>
       </div>
     </div>
   </div>
-  <div class="cardfloat" v-for="(value, index) in shopsSelected" :key="`second-${index}`" v-show="selectedShops">
-    <div class="card" >
-      <img :src="value.shop.img_url" alt="">
-      <p id="shop_name">{{ value.shop.name }}</p>
-      <p id="region_genre">#{{ value.shop.region }}#{{ value.shop.genre }}</p>
-      <div class="button_img_flex">
+  <div v-if="this.$store.state.user.type === 2">
+    <div class="shopInfoFlex">
+      <div class="shopInfoContent">
+        <h1>{{shopInfo.shop.name}}</h1>
+        <img :src="shopInfo.shop.img_url" alt="">
+        <div class="infoContent">
+          <p>#{{shopInfo.shop.region}}#{{shopInfo.shop.genre}}</p>
+          <p>{{shopInfo.shop.info}}</p>
+        </div>
+      </div>
+      <div v-if="shopInfo.reservation=[]">
+        <h1 id="listOfReservation">予約はありません</h1>
+      </div>
+      <div v-for="(value, index) in shopInfo.reservation" :key="index">
+        <h1 id="listOfReservation">予約一覧</h1>
+        <table class="summary">
+          <img 
+            class="reservationImg" 
+            src="../assets/cross.png"
+            @click="del(value.id)" 
+            alt="">
+          <tr>
+            <th>Table No.</th>
+            <td>{{value.table_id}}</td>
+          </tr>
+          <tr>
+            <th>Date/Time</th>
+            <td>{{value.date_time}}</td>
+          </tr>
+          <tr>
+            <th>Number</th>
+            <td>{{value.number_of_people}}</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+  </div>
+  <div v-if="this.$store.state.user.type === 3">
+    <div class="card" id="searchBar">
+      <select v-model="selectedArea" class="selected">
+        <option>All area</option>
+        <option v-for="area in optionAreas" 
+          v-bind:value="area" 
+          v-bind:key="area">
+        {{ area }}
+        </option>
+      </select>
+      <div class="separateOne">|</div>
+      <select v-model="selectedGenre" class="selected" >
+        <option>All genre</option>
+        <option v-for="genre in optionGenres" 
+          v-bind:value="genre" 
+          v-bind:key="genre">
+        {{ genre }}
+        </option>
+      </select>
+      <div class="separateTwo">|</div>
+      <input type="text" placeholder="Search ..." v-model="searchWords">
+      <img src="../assets/search.png" alt="" id="search">
+    </div>
+    <div class="cardfloat" v-for="(value, index) in shops" :key="`first-${index}`" v-show="allShops">
+      <div class="card">
+        <img :src="value.shop.img_url" alt="">
+        <p id="shop_name">{{ value.shop.name }}</p>
+        <p id="region_genre">#{{ value.shop.region }}#{{ value.shop.genre }}</p>
         <button @click="
                   $router.push({
                     path: '/shop/' + value.shop.id,
                     params: { id: value.shop.id },
                   })
-                ">詳しく見る</button>
-        <img class="heart_img" src="../assets/Rheart.png" alt="" v-if="value.favorite.length === 1">
-        <img class="heart_img" src="../assets/heart.png" alt="" v-if="value.favorite.length === 0">
+                ">情報を編集する</button>
+      </div>
+    </div>
+    <div class="cardfloat" v-for="(value, index) in shopsSelected" :key="`second-${index}`" v-show="selectedShops">
+      <div class="card" >
+        <img :src="value.shop.img_url" alt="">
+        <p id="shop_name">{{ value.shop.name }}</p>
+        <p id="region_genre">#{{ value.shop.region }}#{{ value.shop.genre }}</p>
+        <button @click="
+                  $router.push({
+                    path: '/shop/' + value.shop.id,
+                    params: { id: value.shop.id },
+                  })
+                ">情報を編集する</button>
       </div>
     </div>
   </div>
@@ -76,6 +168,7 @@ export default {
       id: this.$store.state.user.id,
       name: this.$store.state.user.name,
       shops: [],
+      shopInfo: [],
       selectedArea: "All area",
       selectedGenre: "All genre",
       optionAreas: [],
@@ -85,47 +178,56 @@ export default {
       allShops: true,
       selectedShops: false,
       wordChangeCounter: 0,
-      shopDetail: [],
     };
   },
   methods: {
     async getShopsAndOptions() {
       const data = await axios.get(
-        "http://127.0.0.1:8001/api/getshops"
-      );
-      this.shops = data.data.data;
+        "http://127.0.0.1:8001/api/getShopDetail",{
+          params: {
+            user_id: this.id,
+          }
+        });
+      this.shops = data.data;
       // console.log("this.shops",this.shops);
 
       // エリアの選択肢をshopsから抽出
       for(let i = 0; this.shops.length > i; i++) {
-        if(this.optionAreas.includes(this.shops[i].region) == false){
-          this.optionAreas.push(this.shops[i].region);
+        if(this.optionAreas.includes(this.shops[i].shop.region) == false){
+          this.optionAreas.push(this.shops[i].shop.region);
           // console.log('this.optionAreas',this.optionAreas)
         }
       }
       // ジャンルの選択肢をshopsから抽出
       for(let j = 0; this.shops.length > j; j++) {
-        if(this.optionGenres.includes(this.shops[j].genre) == false){
-          this.optionGenres.push(this.shops[j].genre);
+        if(this.optionGenres.includes(this.shops[j].shop.genre) == false){
+          this.optionGenres.push(this.shops[j].shop.genre);
           // console.log('this.optionGenres',this.optionGenres)
         }
       }
 
-      let shopDetail = [];
-      for (let k = 0; data.data.data.length > k; k++) {
-        await axios
-          .get(
-            "http://127.0.0.1:8001/api/getShopInfo/?id=" +
-              data.data.data[k].id
-          )
-          .then((response) => {
-            shopDetail.push(response.data);
-          });
-      }
-      this.shopDetail = shopDetail;
+      // let shopDetail = [];
+      // for (let k = 0; data.data.data.length > k; k++) {
+      //   await axios
+      //     .get(
+      //       "http://127.0.0.1:8001/api/getShopInfo/?id=" +
+      //         data.data.data[k].id
+      //     )
+      //     .then((response) => {
+      //       shopDetail.push(response.data);
+      //     });
+      // }
+      // this.shopDetail = shopDetail;
 
       // console.log("this.shopDetail",this.shopDetail);
-      },
+    },
+    async getShopInfo() {
+      const data = await axios.get(
+        "http://127.0.0.1:8001/api/getShopInfo/?id=" + this.id
+        );
+      this.shopInfo = data.data;
+      console.log("this.shopInfo",this.shopInfo);
+    },
     async fav(index) {
       const data = await axios
           .get("http://127.0.0.1:8001/api/favorite", {
@@ -135,7 +237,7 @@ export default {
             }
           })
           const result = data.data.data;
-          console.log("result",data.data.data);
+          // console.log("result",data.data.data);
       if (result) {
         axios({
           method: "delete",
@@ -165,10 +267,27 @@ export default {
             });
           });
       }
-    }
+    },
+    // 予約を削除する
+    del(index) {
+    //  console.log("index",index)
+      axios
+        .delete(
+          "http://127.0.0.1:8001/api/deleteReservation/?id=" +
+            index
+        )
+        .then((response) => {
+          console.log(response);
+          this.$router.go({
+            path: this.$router.currentRoute.path,
+            force: true,
+          });
+        });
+    },
   },
   created() {
     this.getShopsAndOptions();
+    this.getShopInfo();
   },
   watch: {
     // selectedAreaが入力されたらshopsの表示をv-showで消し、代わりにshopsSelectedを表示する
@@ -176,21 +295,22 @@ export default {
       // エリアとジャンルどちらも指定がない場合は全てのshop一覧を表示
       if(this.selectedGenre === "All genre" && this.selectedArea === "All area"){
         this.allShops = true;
+        this.selectedShops = false;
       // エリアの指定がない場合はジャンルのみでフィルターする
       } else if(this.selectedArea === "All area"){
         this.allShops = false;
         this.selectedShops = true;
-        this.shopsSelected = this.shopDetail.filter((value) => value.shop.genre === this.selectedGenre);
+        this.shopsSelected = this.shops.filter((value) => value.shop.genre === this.selectedGenre);
       // ジャンルの指定がない場合はエリアのみでフィルターする
       } else if(this.selectedGenre === "All genre"){
         this.allShops = false;
         this.selectedShops = true;
-        this.shopsSelected = this.shopDetail.filter((value) => value.shop.region === this.selectedArea);
+        this.shopsSelected = this.shops.filter((value) => value.shop.region === this.selectedArea);
       // エリアとジャンルの両方が表示されている場合はshopを両方の条件でフィルターする
       } else {
         this.allShops = false;
         this.selectedShops = true;
-        var areaChecked = this.shopDetail.filter((value) => value.shop.region === this.selectedArea);
+        var areaChecked = this.shops.filter((value) => value.shop.region === this.selectedArea);
         this.shopsSelected = areaChecked.filter((value) => value.shop.genre === this.selectedGenre);
       }
     },
@@ -199,21 +319,22 @@ export default {
       // エリアとジャンルどちらも指定がない場合は全てのショップ一覧を表示
       if(this.selectedGenre === "All genre" && this.selectedArea === "All area"){
         this.allShops = true;
+        this.selectedShops = false;
       // ジャンルの指定がない場合はエリアのみでフィルターする
       } else if(this.selectedGenre === "All genre"){
         this.allShops = false;
         this.selectedShops = true;
-        this.shopsSelected = this.shopDetail.filter((value) => value.shop.region === this.selectedArea);
+        this.shopsSelected = this.shops.filter((value) => value.shop.region === this.selectedArea);
       // エリアの指定がない場合はジャンルのみでフィルターする
       } else if(this.selectedArea === "All area"){
         this.allShops = false;
         this.selectedShops = true;
-        this.shopsSelected = this.shopDetail.filter((value) => value.shop.genre === this.selectedGenre);
+        this.shopsSelected = this.shops.filter((value) => value.shop.genre === this.selectedGenre);
       // エリアとジャンルの両方が表示されている場合はshopを両方の条件でフィルターする
       } else {
         this.allShops = false;
         this.selectedShops = true;
-        var genreChecked = this.shopDetail.filter((value) => value.shop.genre === this.selectedGenre);
+        var genreChecked = this.shops.filter((value) => value.shop.genre === this.selectedGenre);
         this.shopsSelected = genreChecked.filter((value) => value.shop.region === this.selectedArea);
       }
     },
@@ -231,13 +352,13 @@ export default {
       // console.log("this.shopDetail.shop[1].region",this.shopDetail.shop[1].region);
 
       // name, region, genre, infoの中を検索するし一致したもののみshopsSelectedへ入れて表示する
-      for(let i = 0; this.shopDetail.length > i; i++) {
-        var shopDetail = this.shopDetail[i];
-        if(shopDetail.shop.name.indexOf(this.searchWords) !== -1 ||
-            shopDetail.shop.region.indexOf(this.searchWords)  !== -1 ||
-              shopDetail.shop.genre.indexOf(this.searchWords) !== -1 ||
-                shopDetail.shop.info.indexOf(this.searchWords) !== -1) {
-              this.shopsSelected.push(shopDetail);
+      for(let i = 0; this.shops.length > i; i++) {
+        var shops = this.shops[i];
+        if(shops.shop.name.indexOf(this.searchWords) !== -1 ||
+            shops.shop.region.indexOf(this.searchWords)  !== -1 ||
+              shops.shop.genre.indexOf(this.searchWords) !== -1 ||
+                shops.shop.info.indexOf(this.searchWords) !== -1) {
+              this.shopsSelected.push(shops);
             }
       }
       return this.shopsSelected
@@ -264,6 +385,7 @@ export default {
   border-radius: 10px;
   box-shadow: 2px 2px 4px grey;
   top: 140px;
+  height: 286px;
 }
 
 img {
@@ -393,5 +515,41 @@ input {
 
 .logoutMargin {
   margin-left: 15px;
+}
+
+.shopInfoContent {
+  position: relative;
+  top: 88px;
+  text-align: left;
+  margin: 0px 40px;
+  width: 50%;
+}
+
+.summary {
+  position: relative;
+  margin: 5px 20px;
+  background-color: #305CFF;
+  color: #fff;
+  border-radius: 5px;
+  padding: 15px;
+  height: 80px;
+  top: 88px;
+}
+
+.shopInfoFlex {
+  display: flex;
+}
+
+#listOfReservation {
+  position: relative;
+  top: 88px;
+  text-align: left;
+  padding-left: 21px;
+}
+
+.summary img {
+  width: 20%;
+  position: relative;
+  float: left;
 }
 </style>

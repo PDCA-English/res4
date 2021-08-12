@@ -6,6 +6,8 @@ import Register from '../views/Register.vue'
 import Shop from '../views/Shop.vue'
 import Mypage from '../views/Mypage.vue'
 import Thanks from '../views/Thanks.vue'
+import ShopRegister from '../views/ShopRegister.vue'
+import TableRegister from '../views/TableRegister.vue'
 import store from "../store/index";
 
 Vue.use(VueRouter)
@@ -50,6 +52,22 @@ const routes = [
     path: "/thanks",
     name: "Thanks",
     component: Thanks,
+    meta: {
+      requiresAuth: true,
+    },
+  },
+  {
+    path: "/shopRegister",
+    name: "ShopRegister",
+    component: ShopRegister,
+    meta: {
+      requiresAuth: true,
+    },
+  },
+  {
+    path: "/tableRegister",
+    name: "TableRegister",
+    component: TableRegister,
     meta: {
       requiresAuth: true,
     },

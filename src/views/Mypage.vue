@@ -5,61 +5,63 @@
     <p @click="$router.push('/home')">ホーム</p>
     <p class="logoutMargin" @click="$store.dispatch('logout')">ログアウト</p>
   </div>
-  <div class="contentsFlex">
-    <div class="bookingInfo">
-      <h2>予約状況</h2>
-      <div class="card" id="reservationCard" v-for="(reservation, index) in reservations" :key="index">
-        <div class="cardHead">
-          <div class="cardHeadLeft">
-            <img class="reservationImg" src="../assets/clock.png" alt="">
-            <div>予約{{index+1}}</div>
+  <div v-if="this.$store.state.user.type === 1">
+    <div class="contentsFlex">
+      <div class="bookingInfo">
+        <h2>予約状況</h2>
+        <div class="card" id="reservationCard" v-for="(reservation, index) in reservations" :key="index">
+          <div class="cardHead">
+            <div class="cardHeadLeft">
+              <img class="reservationImg" src="../assets/clock.png" alt="">
+              <div>予約{{index+1}}</div>
+            </div>
+            <div class="cardHeahRight">
+              <img 
+                class="reservationImg" 
+                src="../assets/cross.png"
+                @click="del(reservation.reservation[6])" 
+                alt="">
+            </div>
           </div>
-          <div class="cardHeahRight">
-            <img 
-              class="reservationImg" 
-              src="../assets/cross.png"
-              @click="del(reservation[7])" 
-              alt="">
+          <div class="summary">
+            <table>
+              <tr>
+                <th>Shop</th>
+                <td>{{reservation.shop.name}}</td>
+              </tr>
+              <tr>
+                <th>Date</th>
+                <td>{{reservation.reservation[0]}}年{{reservation.reservation[1]}}月{{reservation.reservation[2]}}日（{{reservation.reservation[3]}}）</td>
+              </tr>
+              <tr>
+                <th>Time</th>
+                <td>{{reservation.reservation[4]}}</td>
+              </tr>
+              <tr>
+                <th>Number</th>
+                <td>{{reservation.reservation[5]}}</td>
+              </tr>
+            </table>
           </div>
-        </div>
-        <div class="summary">
-          <table>
-            <tr>
-              <th>Shop</th>
-              <td>{{getShopName(reservation[0])}}</td>
-            </tr>
-            <tr>
-              <th>Date</th>
-              <td>{{reservation[1]}}年{{reservation[2]}}月{{reservation[3]}}日（{{reservation[4]}}）</td>
-            </tr>
-            <tr>
-              <th>Time</th>
-              <td>{{reservation[5]}}</td>
-            </tr>
-            <tr>
-              <th>Number</th>
-              <td>{{reservation[6]}}</td>
-            </tr>
-          </table>
         </div>
       </div>
-    </div>
-    <div class="favorite">
-      <h2>{{ name }}さん</h2>
-      <h2>お気に入り店舗</h2>
-      <div class="cardfloat" v-for="(shop, index) in shops" :key="`first-${index}`">
-        <div class="card" >
-          <img :src="shop.img_url" alt="">
-          <p id="shop_name">{{ shop.name }}</p>
-          <p id="region_genre">#{{ shop.region }}#{{ shop.genre }}</p>
-          <div class="button_img_flex">
-            <button @click="
-                      $router.push({
-                        path: '/shop/' + shop.id,
-                        params: { id: shop.id },
-                      })
-                    ">詳しく見る</button>
-            <img class="heart_img" src="../assets/heart.png" alt="">
+      <div class="favorite">
+        <h2>{{ name }}さん</h2>
+        <h2>お気に入り店舗</h2>
+        <div class="cardfloat" v-for="(shop, index) in shops" :key="`first-${index}`">
+          <div class="card" >
+            <img :src="shop.img_url" alt="">
+            <p id="shop_name">{{ shop.name }}</p>
+            <p id="region_genre">#{{ shop.region }}#{{ shop.genre }}</p>
+            <div class="button_img_flex">
+              <button @click="
+                        $router.push({
+                          path: '/shop/' + shop.id,
+                          params: { id: shop.id },
+                        })
+                      ">詳しく見る</button>
+              <img class="heart_img" src="../assets/Rheart.png" alt="">
+            </div>
           </div>
         </div>
       </div>
@@ -84,11 +86,15 @@ export default {
     };
   },
   methods: {
+    // お気に入りしている店舗のみを取得する
    async getShops() {
      const data = await axios.get(
-       "http://127.0.0.1:8001/api/getshops"
-     );
-     this.shops = data.data.data
+       "http://127.0.0.1:8001/api/getMyFavorite",{
+         params: {
+           user_id: this.id,
+         }
+       });
+      this.shops = data.data;
    },
    async getMyReservation() {
      const data = await axios.get(
@@ -98,6 +104,7 @@ export default {
          }
        })
      this.reservations = data.data;
+     console.log("this.reservations",this.reservations);
    },
 
   // 予約を削除する
@@ -118,10 +125,10 @@ export default {
    },
 
   // 予約一覧に表示されるshopIDを店名に変換する
-   getShopName(shopId) {
-     const shopName = this.shops.find(shop => shop.id === shopId);
-     return shopName["name"];
-   }
+  //  getShopName(shopId) {
+  //    const shopName = this.shops.find(shop => shop.id === shopId);
+  //    return shopName["name"];
+  //  }
    
   },
   created() {

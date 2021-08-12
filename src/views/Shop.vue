@@ -2,10 +2,11 @@
 <div id="app">
   <Logo />
   <div class="logout">
-    <p @click="$router.push('/mypage')">マイページ</p>
+    <p @click="$router.push('/mypage')" v-if="this.$store.state.user.type === 1">マイページ</p>
+    <p @click="$router.push('/home')" v-if="this.$store.state.user.type === 3">ホーム</p>
     <p class="logoutMargin" @click="$store.dispatch('logout')">ログアウト</p>
   </div>
-  <div class="info">
+  <div class="info" v-if="this.$store.state.user.type === 1">
     <div class="infoHead">
       <button @click="$router.push('/home')">&lt;</button>
       <h1>{{shopInfo.shop.name}}</h1>
@@ -16,7 +17,34 @@
       <p>{{shopInfo.shop.info}}</p>
     </div>
   </div>
-  <div class="reservation">
+  <div class="editInfo" v-if="this.$store.state.user.type === 3">
+    <div class="editFlex">
+      <p>店舗名</p>
+      <input type="text" name="" id="" v-model="shopInfo.shop.name">
+    </div>
+    <img :src="shopInfo.shop.img_url" alt="">
+    <div class="editFlex">
+      <p>画像のURL</p>
+      <input type="url" name="" id="" v-model="shopInfo.shop.img_url">
+    </div>
+    <div class="editFlex">
+      <p>エリア</p>
+      <input type="text" name="" id="" v-model="shopInfo.shop.region">
+    </div>
+    <div class="editFlex">
+      <p>ジャンル</p>
+      <input type="text" name="" id="" v-model="shopInfo.shop.genre">
+    </div>
+    <div class="editFlex">
+      <p id="shopInfoEdit">店舗概要</p>
+      <textarea name="" id="" v-model="shopInfo.shop.info"></textarea>
+    </div>
+      <div class="editFlex" id="flexBtn">
+        <button id="updateButton" @click="updateShop">更新</button>
+        <button id="deleteButton" @click="deleteShop">削除</button>
+      </div>
+  </div>
+  <div class="reservation" v-if="this.$store.state.user.type === 1">
     <h2>予約</h2>
     <p class="explanation">ご予約の人数を選択ください。</p>
     <select name="number" v-model="number">
@@ -172,11 +200,37 @@ export default {
      this.chosenDate = "";
      this.chosenDay = "";
      this.time = "";
+   },
+  //  店舗情報を更新する
+   updateShop() {
+    axios
+      .put("http://127.0.0.1:8001/api/updateShopInfo", {
+        id: this.shopInfo.shop.id,
+        name: this.shopInfo.shop.name,
+        img_url: this.shopInfo.shop.img_url,
+        region: this.shopInfo.shop.region,
+        genre: this.shopInfo.shop.genre,
+        info: this.shopInfo.shop.info,
+      })
+      .then((response) => {
+        console.log(response);
+        this.$router.go({
+          path: this.$router.currentRoute.path,
+          force: true,
+        });
+      });
+   },
+  //  店舗情報を削除する
+   deleteShop() {
+     axios
+       .delete(
+         "http://127.0.0.1:8001/api/deleteShop/?id=" +
+           this.id
+       )
+       .then(() => {
+         this.$router.push('/home')
+         })
    }
-
-// text = text.replace(/aaa/g, 'ccc');
-
-
  },
  watch: {
    
@@ -342,5 +396,82 @@ input[type="radio"]:checked + label {
   color: #ff3064;
   border-radius: 5px;
   font-weight: 900;
+}
+
+.editInfo {
+  position: relative;
+  padding: 0px 100px 150px 100px;
+  top: 150px;
+  width: 100%;
+}
+
+.editInfo img {
+  width: 96%;
+}
+
+.editInfo input {
+  margin: 10px;
+  width: 76%;
+  border: 2px solid #305CFF;
+}
+
+textarea {
+  margin: 10px;
+  width: 77%;
+  border: 2px solid #305CFF;
+  border-radius: 5px;
+  height: 100px;
+}
+
+.editInfo p {
+  background-color: #305CFF;
+  color: #ffffff;
+  border-radius: 5px;
+  font-weight: bold;
+  text-align: center;
+  display: block;
+  padding: 10px;
+  width: 80px;
+  margin: 10px;
+}
+
+.editFlex {
+  display: flex;
+}
+
+#shopInfoEdit {
+  height: 24px;
+}
+
+#updateButton {
+  width: 20%;
+  background-color: #305CFF;
+  color: #ffffff;
+  font-weight: bold;
+  margin-top: 30px;
+}
+
+#updateButton:hover {
+  background-color: #ffffff;
+  color: #305CFF;
+  font-weight: bold;
+}
+
+#deleteButton {
+  width: 20%;
+  background-color: #ff3064;
+  color: #ffffff;
+  font-weight: bold;
+  margin-top: 30px;
+}
+
+#deleteButton:hover {
+  background-color: #ffffff;
+  color: #ff3064;
+  font-weight: bold;
+}
+
+#flexBtn {
+  justify-content: space-around;
 }
 </style>
