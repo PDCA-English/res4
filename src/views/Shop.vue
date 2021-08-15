@@ -57,7 +57,7 @@
       <option v-for="(dateOneMonthAhead, dateIndex) in datesOneMonthAhead" v-bind:key="dateIndex" v-bind:value="dateOneMonthAhead[0]">{{dateOneMonthAhead[1]}}年{{dateOneMonthAhead[2]}}月{{dateOneMonthAhead[3]}}日（{{dateOneMonthAhead[4]}}）</option>
     </select>
     <!-- numberを入力すると下記が表示される -->
-      <table v-show="number">
+      <table v-show="number" id="reservationTable">
         <tr>
           <th></th>
           <!-- startDateが入っていれば選んだ日付から一週間が、入っていなければ今日から一週間が表示される -->
@@ -73,9 +73,9 @@
                     :value="time" 
                     @click="setDateTime(availability[0][0],availability[0][1],availability[0][2],availability[0][3],availability[0][4],time)">
               <label :for="[timeIndex+1]+[index]" v-if="availability[timeIndex+1][time]===true">
-                ◯
+                ⚫
               </label>
-            <p v-if="availability[timeIndex+1][time]===false">
+            <p v-if="availability[timeIndex+1][time]===false || availability[timeIndex+1][time]===null">
               ✕
             </p>
             </td>
@@ -392,10 +392,15 @@ input[type="radio"]:checked + label {
 }
 
 #hover:hover {
-  background-color: #ffffff; /* マウスオーバー時の背景色を指定する */
+  background-color: #305CFF; /* マウスオーバー時の背景色を指定する */
   color: #ff3064;
   border-radius: 5px;
   font-weight: 900;
+}
+
+label {
+  width: 100%;
+  display: inline-block;
 }
 
 .editInfo {
@@ -473,5 +478,25 @@ textarea {
 
 #flexBtn {
   justify-content: space-around;
+}
+
+table p {
+  margin: 0px;
+}
+
+#reservationTable {
+  border-collapse: collapse;
+
+}
+
+#reservationTable td {
+  border-bottom: solid 1px #305CFF;
+  border-right: solid 1px #305CFF;
+  background-color: #ffffff;
+  color: #305CFF;
+}
+
+#reservationTable th {
+  border-bottom: solid 2px #ffffff;
 }
 </style>

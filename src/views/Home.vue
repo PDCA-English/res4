@@ -67,13 +67,40 @@
   </div>
   <div v-if="this.$store.state.user.type === 2">
     <div class="shopInfoFlex">
-      <div class="shopInfoContent">
+      <!-- <div class="shopInfoContent">
         <h1>{{shopInfo.shop.name}}</h1>
         <img :src="shopInfo.shop.img_url" alt="">
         <div class="infoContent">
           <p>#{{shopInfo.shop.region}}#{{shopInfo.shop.genre}}</p>
           <p>{{shopInfo.shop.info}}</p>
         </div>
+      </div> -->
+      <div class="editInfo">
+        <div class="editFlex">
+          <p>店舗名</p>
+          <input type="text" name="" id="" v-model="shopInfo.shop.name">
+        </div>
+        <img :src="shopInfo.shop.img_url" alt="">
+        <div class="editFlex">
+          <p>画像のURL</p>
+          <input type="url" name="" id="" v-model="shopInfo.shop.img_url">
+        </div>
+        <div class="editFlex">
+          <p>エリア</p>
+          <input type="text" name="" id="" v-model="shopInfo.shop.region">
+        </div>
+        <div class="editFlex">
+          <p>ジャンル</p>
+          <input type="text" name="" id="" v-model="shopInfo.shop.genre">
+        </div>
+        <div class="editFlex">
+          <p id="shopInfoEdit">店舗概要</p>
+          <textarea name="" id="" v-model="shopInfo.shop.info"></textarea>
+        </div>
+          <div class="editFlex" id="flexBtn">
+            <button id="updateButton" @click="updateShop">更新</button>
+            <!-- <button id="deleteButton" @click="deleteShop">削除</button> -->
+          </div>
       </div>
       <div v-if="shopInfo.reservation=[]">
         <h1 id="listOfReservation">予約はありません</h1>
@@ -276,6 +303,25 @@ export default {
           "http://127.0.0.1:8001/api/deleteReservation/?id=" +
             index
         )
+        .then((response) => {
+          console.log(response);
+          this.$router.go({
+            path: this.$router.currentRoute.path,
+            force: true,
+          });
+        });
+    },
+    //  店舗情報を更新する
+    updateShop() {
+      axios
+        .put("http://127.0.0.1:8001/api/updateShopInfo", {
+          id: this.shopInfo.shop.id,
+          name: this.shopInfo.shop.name,
+          img_url: this.shopInfo.shop.img_url,
+          region: this.shopInfo.shop.region,
+          genre: this.shopInfo.shop.genre,
+          info: this.shopInfo.shop.info,
+        })
         .then((response) => {
           console.log(response);
           this.$router.go({
@@ -545,11 +591,77 @@ input {
   top: 88px;
   text-align: left;
   padding-left: 21px;
+  width: 100%;
 }
 
 .summary img {
   width: 20%;
   position: relative;
   float: left;
+}
+
+.editInfo {
+  position: relative;
+  padding: 0px 30px 100px 30px;
+  top: 150px;
+  width: 50%;
+}
+
+.editInfo img {
+  width: 96%;
+  border-radius: 0px;
+}
+
+.editInfo input {
+  margin: 10px;
+  width: 76%;
+  border: 2px solid #305CFF;
+  left: 0%;
+  border-radius: 5px;
+}
+
+textarea {
+  margin: 10px;
+  width: 77%;
+  border: 2px solid #305CFF;
+  border-radius: 5px;
+  height: 100px;
+}
+
+.editInfo p {
+  background-color: #305CFF;
+  color: #ffffff;
+  border-radius: 5px;
+  font-weight: bold;
+  text-align: center;
+  display: block;
+  padding: 10px;
+  width: 80px;
+  margin: 10px;
+}
+
+.editFlex {
+  display: flex;
+}
+
+#shopInfoEdit {
+  height: 24px;
+}
+
+#updateButton {
+  width: 30%;
+  height: 60px;
+  font-size: 30px;
+  background-color: #305CFF;
+  color: #ffffff;
+  font-weight: bold;
+  margin: 30px auto;
+}
+
+#updateButton:hover {
+  background-color: #ffffff;
+  color: #305CFF;
+  font-weight: bold;
+  border: solid 2px #305CFF;
 }
 </style>
