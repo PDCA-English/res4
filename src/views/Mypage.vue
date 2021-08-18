@@ -104,7 +104,7 @@ export default {
          }
        })
      this.reservations = data.data;
-     console.log("this.reservations",this.reservations);
+    //  console.log("this.reservations",this.reservations);
    },
 
   // 予約を削除する
@@ -231,7 +231,6 @@ button {
   position: relative;
   border-radius: 10px;
   box-shadow: 2px 2px 4px grey;
-  top: 140px;
 }
 
 img {

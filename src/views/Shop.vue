@@ -172,7 +172,7 @@ export default {
        "http://127.0.0.1:8001/api/getShopInfo/?id=" + this.id
      )
      this.shopInfo = data.data;
-     console.log("this.shopInfo",this.shopInfo);
+    //  console.log("this.shopInfo",this.shopInfo);
      
    },
    async getSlot() {
@@ -416,13 +416,13 @@ label {
 
 .editInfo input {
   margin: 10px;
-  width: 76%;
+  width: 80%;
   border: 2px solid #305CFF;
 }
 
 textarea {
   margin: 10px;
-  width: 77%;
+  width: 81%;
   border: 2px solid #305CFF;
   border-radius: 5px;
   height: 100px;

@@ -253,7 +253,7 @@ export default {
         "http://127.0.0.1:8001/api/getShopInfo/?id=" + this.id
         );
       this.shopInfo = data.data;
-      console.log("this.shopInfo",this.shopInfo);
+      // console.log("this.shopInfo",this.shopInfo);
     },
     async fav(index) {
       const data = await axios
@@ -432,6 +432,8 @@ export default {
   box-shadow: 2px 2px 4px grey;
   top: 140px;
   height: 286px;
+  max-width: 280px;
+  min-width: 140px;
 }
 
 img {
@@ -499,7 +501,7 @@ button {
 .button_img_flex {
   display: flex;
   justify-content: space-between;
-  padding: 14px 18px 20px 14px;
+  padding: 5px 18px 20px 14px;
 }
 
 .heart_img {
@@ -512,6 +514,8 @@ button {
   right: 5%;
   width: 40%;
   height: 44px;
+  max-width: 550px;
+  min-width: 350px;
 }
 
 .selected{

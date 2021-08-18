@@ -115,7 +115,7 @@ export default {
   left: 0;
   margin: auto;
   width: 25%;
-  height: 50%;
+  height: 453px;
   border-radius: 10px;
   background-color: #fff;
   box-shadow: 2px 2px 4px gray;
