@@ -241,6 +241,7 @@ export default {
 
   startDate: function(){
     this.getSlot();
+    console.log("startDate",this.startDate);
   },
 
   // date: function(){
