@@ -75,7 +75,7 @@ export default {
  },
  methods: {
    regTables() {
-     axios.post("http://127.0.0.1:8001/api/regTables", {
+     axios.post("https://fierce-forest-20676.herokuapp.com/api/regTables", {
        shop_id: this.$store.state.user.id,
        numOfPeopleOne: this.numOfPeopleOne,
        numOfTableOne: this.numOfTableOne,
@@ -94,7 +94,7 @@ export default {
    },
    async getTables() {
      const data = await axios.get(
-       "http://127.0.0.1:8001/api/getTables",{
+       "https://fierce-forest-20676.herokuapp.com/api/getTables",{
          params: {
            shop_id: this.$store.state.user.id,
          }
@@ -106,7 +106,7 @@ export default {
     //  console.log("index",index);
     axios
       .delete(
-        "http://127.0.0.1:8001/api/deleteTable",{
+        "https://fierce-forest-20676.herokuapp.com/api/deleteTable",{
           params: {
             shop_id: this.$store.state.user.id,
             numberOfPeople: index,
@@ -124,7 +124,7 @@ export default {
   //   //  console.log("index",index)
   //    axios
   //      .delete(
-  //        "http://127.0.0.1:8001/api/deleteReservation/?id=" +
+  //        "https://fierce-forest-20676.herokuapp.com/api/deleteReservation/?id=" +
   //          index
   //      )
   //      .then((response) => {

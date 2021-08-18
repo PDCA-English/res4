@@ -210,7 +210,7 @@ export default {
   methods: {
     async getShopsAndOptions() {
       const data = await axios.get(
-        "http://127.0.0.1:8001/api/getShopDetail",{
+        "https://fierce-forest-20676.herokuapp.com/api/getShopDetail",{
           params: {
             user_id: this.id,
           }
@@ -237,7 +237,7 @@ export default {
       // for (let k = 0; data.data.data.length > k; k++) {
       //   await axios
       //     .get(
-      //       "http://127.0.0.1:8001/api/getShopInfo/?id=" +
+      //       "https://fierce-forest-20676.herokuapp.com/api/getShopInfo/?id=" +
       //         data.data.data[k].id
       //     )
       //     .then((response) => {
@@ -250,14 +250,14 @@ export default {
     },
     async getShopInfo() {
       const data = await axios.get(
-        "http://127.0.0.1:8001/api/getShopInfo/?id=" + this.id
+        "https://fierce-forest-20676.herokuapp.com/api/getShopInfo/?id=" + this.id
         );
       this.shopInfo = data.data;
       // console.log("this.shopInfo",this.shopInfo);
     },
     async fav(index) {
       const data = await axios
-          .get("http://127.0.0.1:8001/api/favorite", {
+          .get("https://fierce-forest-20676.herokuapp.com/api/favorite", {
             params: {
               shop_id: index,
               user_id: this.$store.state.user.id,
@@ -268,7 +268,7 @@ export default {
       if (result) {
         axios({
           method: "delete",
-          url: "http://127.0.0.1:8001/api/favorite",
+          url: "https://fierce-forest-20676.herokuapp.com/api/favorite",
           data: {
             shop_id: index,
             user_id: this.$store.state.user.id,
@@ -282,7 +282,7 @@ export default {
         });
       } else {
         axios
-          .post("http://127.0.0.1:8001/api/favorite", {
+          .post("https://fierce-forest-20676.herokuapp.com/api/favorite", {
             shop_id: index,
             user_id: this.$store.state.user.id,
           })
@@ -300,7 +300,7 @@ export default {
     //  console.log("index",index)
       axios
         .delete(
-          "http://127.0.0.1:8001/api/deleteReservation/?id=" +
+          "https://fierce-forest-20676.herokuapp.com/api/deleteReservation/?id=" +
             index
         )
         .then((response) => {
@@ -314,7 +314,7 @@ export default {
     //  店舗情報を更新する
     updateShop() {
       axios
-        .put("http://127.0.0.1:8001/api/updateShopInfo", {
+        .put("https://fierce-forest-20676.herokuapp.com/api/updateShopInfo", {
           id: this.shopInfo.shop.id,
           name: this.shopInfo.shop.name,
           img_url: this.shopInfo.shop.img_url,

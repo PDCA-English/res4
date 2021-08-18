@@ -89,7 +89,7 @@ export default {
     // お気に入りしている店舗のみを取得する
    async getShops() {
      const data = await axios.get(
-       "http://127.0.0.1:8001/api/getMyFavorite",{
+       "https://fierce-forest-20676.herokuapp.com/api/getMyFavorite",{
          params: {
            user_id: this.id,
          }
@@ -98,7 +98,7 @@ export default {
    },
    async getMyReservation() {
      const data = await axios.get(
-       "http://127.0.0.1:8001/api/getMyReservation/",{
+       "https://fierce-forest-20676.herokuapp.com/api/getMyReservation/",{
          params: {
            user_id: this.id,
          }
@@ -112,7 +112,7 @@ export default {
     //  console.log("index",index)
      axios
        .delete(
-         "http://127.0.0.1:8001/api/deleteReservation/?id=" +
+         "https://fierce-forest-20676.herokuapp.com/api/deleteReservation/?id=" +
            index
        )
        .then((response) => {

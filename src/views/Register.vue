@@ -40,7 +40,7 @@ export default {
  methods: {
     auth() {
       axios
-        .post("http://127.0.0.1:8001/api/register/", {
+        .post("https://fierce-forest-20676.herokuapp.com/api/register/", {
           name: this.name,
           email: this.email,
           password: this.password,

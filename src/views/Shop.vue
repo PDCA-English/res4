@@ -154,7 +154,7 @@ export default {
   //  ここで予約を確定するために日時、人数、ショップID、ユーザーIDをバックに送る
    confirmDateTime() {
     axios
-      .get("http://127.0.0.1:8001/api/confirmDateTime", {
+      .get("https://fierce-forest-20676.herokuapp.com/api/confirmDateTime", {
         params: {
           shop_id: this.id,
           user_id: this.user_id,
@@ -169,7 +169,7 @@ export default {
    },
    async getShopInfo() {
      const data = await axios.get(
-       "http://127.0.0.1:8001/api/getShopInfo/?id=" + this.id
+       "https://fierce-forest-20676.herokuapp.com/api/getShopInfo/?id=" + this.id
      )
      this.shopInfo = data.data;
     //  console.log("this.shopInfo",this.shopInfo);
@@ -177,7 +177,7 @@ export default {
    },
    async getSlot() {
      const data = await axios.get(
-       "http://127.0.0.1:8001/api/getSlot/",{
+       "https://fierce-forest-20676.herokuapp.com/api/getSlot/",{
          params: {
            shop_id: this.id,
            user_id: this.user_id,
@@ -204,7 +204,7 @@ export default {
   //  店舗情報を更新する
    updateShop() {
     axios
-      .put("http://127.0.0.1:8001/api/updateShopInfo", {
+      .put("https://fierce-forest-20676.herokuapp.com/api/updateShopInfo", {
         id: this.shopInfo.shop.id,
         name: this.shopInfo.shop.name,
         img_url: this.shopInfo.shop.img_url,
@@ -224,7 +224,7 @@ export default {
    deleteShop() {
      axios
        .delete(
-         "http://127.0.0.1:8001/api/deleteShop/?id=" +
+         "https://fierce-forest-20676.herokuapp.com/api/deleteShop/?id=" +
            this.id
        )
        .then(() => {
